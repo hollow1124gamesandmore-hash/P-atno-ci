@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Płatności">
+<meta name="theme-color" content="#080810">
+<title>Płatności</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080810;--s1:#10101c;--s2:#18182a;--s3:#22223a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#eeeef5;--muted:#606078;
+  --accent:#6c63ff;--accent-glow:rgba(108,99,255,0.22);
+  --green:#3ecf8e;--yellow:#f5c842;--red:#f0566a;--purple:#b06eff;
+  --green-bg:rgba(62,207,142,0.1);--yellow-bg:rgba(245,200,66,0.1);
+  --red-bg:rgba(240,86,106,0.1);--purple-bg:rgba(176,110,255,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s;overflow:hidden}
+.screen.hidden{transform:translateX(100%);opacity:0;pointer-events:none}
+.scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:90px}
+.scroll-body::-webkit-scrollbar{display:none}
+.nav{position:absolute;bottom:0;left:0;right:0;background:rgba(8,8,16,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:50}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;transition:color .2s}
+.nav-btn.active{color:var(--accent)}
+.nav-icon{font-size:20px;line-height:1}
+.nav-add{flex:0 0 64px;margin:0 8px}
+.nav-add-btn{width:56px;height:56px;border-radius:18px;background:var(--accent);border:none;color:white;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--accent-glow);transition:transform .15s;margin:0 auto}
+.nav-add-btn:active{transform:scale(0.92)}
+.top-bar{padding:52px 20px 14px;background:var(--bg)}
+.top-bar h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px}
+.top-bar .sub{font-size:12px;color:var(--muted);margin-top:3px}
+.back-bar{display:flex;align-items:center;gap:12px;padding:52px 20px 14px;background:var(--bg);flex-shrink:0}
+.back-btn{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--s1);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.back-bar h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.home-hero{margin:0 20px 14px;background:linear-gradient(135deg,#1a1830 0%,#0f1020 100%);border:1px solid rgba(108,99,255,0.2);border-radius:20px;padding:18px;position:relative;overflow:hidden}
+.home-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none}
+.hero-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.hero-amount{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:-1px}
+.hero-amount span{font-size:18px;font-weight:400;color:var(--muted);margin-left:4px}
+.hero-row{display:flex;gap:0;margin-top:14px}
+.hero-stat{flex:1;text-align:center}
+.hero-stat+.hero-stat{border-left:1px solid var(--border)}
+.hero-stat-val{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.hero-stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.sec-lbl{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:0 20px;margin:14px 0 8px}
+.alerts{padding:0 20px;display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.alert-card{border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:opacity .15s}
+.alert-card:active{opacity:.8}
+.a-red{background:var(--red-bg);border:1px solid rgba(240,86,106,0.2)}
+.a-yellow{background:var(--yellow-bg);border:1px solid rgba(245,200,66,0.2)}
+.a-purple{background:var(--purple-bg);border:1px solid rgba(176,110,255,0.25)}
+.alert-icon{font-size:20px;flex-shrink:0}
+.alert-body{flex:1}
+.alert-title{font-size:13px;font-weight:600;line-height:1.3}
+.alert-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.alert-arr{color:var(--muted);font-size:15px}
+.no-alerts{margin:0 20px;padding:14px;background:var(--s1);border:1px solid var(--border);border-radius:14px;text-align:center;color:var(--muted);font-size:13px}
+.list-pad{padding:0 20px;display:flex;flex-direction:column;gap:9px}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:14px;animation:fadeUp .22s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.card-left{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0}
+.card-emoji{font-size:22px;flex-shrink:0;line-height:1}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.card-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.card-btns{display:flex;gap:5px;flex-shrink:0;margin-left:6px}
+.ibtn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--s2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s}
+.ibtn:active{transform:scale(0.88)}
+.badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:20px;font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-auto{background:rgba(108,99,255,0.15);color:#a89fff}
+.b-variable{background:rgba(245,200,66,0.12);color:var(--yellow)}
+.prog-wrap{margin-top:2px}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}
+.prog-days{font-weight:600}
+.prog-track{height:4px;background:var(--s3);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.c-green{color:var(--green)}.c-yellow{color:var(--yellow)}.c-red{color:var(--red)}
+.f-green{background:var(--green)}.f-yellow{background:var(--yellow)}.f-red{background:var(--red)}
+
+/* OPLATA CARD */
+.oplata-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;overflow:hidden;animation:fadeUp .22s ease both}
+.oplata-card-head{padding:14px 14px 10px;display:flex;align-items:flex-start;justify-content:space-between}
+.oplata-months{display:flex;flex-direction:column;gap:0}
+
+/* MONTH ROW */
+.month-row{padding:10px 14px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);transition:background .15s}
+.month-row.current{background:rgba(108,99,255,0.05)}
+.month-row-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.month-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-green{background:var(--green)}
+.dot-yellow{background:var(--yellow);animation:pulseDot 1.5s ease-in-out infinite}
+.dot-gray{background:var(--s3)}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+.month-label{font-size:13px;font-weight:500;flex:1}
+.month-amount{font-size:13px;font-weight:600;color:var(--text)}
+.month-amount.muted{color:var(--muted)}
+.month-date{font-size:11px;color:var(--green);margin-top:1px}
+.month-pending{font-size:11px;color:var(--yellow);margin-top:1px}
+.month-action{flex-shrink:0}
+.pay-btn{padding:6px 12px;border-radius:20px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.pay-btn:active{background:var(--accent);color:white}
+.paid-check{width:28px;height:28px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;cursor:pointer;transition:transform .15s}
+.paid-check:active{transform:scale(0.88)}
+
+.month-nav{display:flex;align-items:center;padding:0 20px;margin-bottom:12px;gap:8px}
+.mnavbtn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--s1);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mnavlbl{flex:1;text-align:center;font-size:13px;font-weight:500}
+.add-scroll{flex:1;overflow-y:auto;padding-bottom:30px}
+.add-scroll::-webkit-scrollbar{display:none}
+.type-sec-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:0 20px;margin:16px 0 8px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 20px}
+.tile{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .18s;text-align:center}
+.tile:active{transform:scale(0.93)}
+.tile-icon{font-size:22px;line-height:1}
+.tile-name{font-size:11px;font-weight:500;line-height:1.2;color:var(--text)}
+.tile-add{background:var(--s2);border-style:dashed}
+.tile-add .tile-name,.tile-add .tile-icon{color:var(--muted)}
+.form-scroll{flex:1;overflow-y:auto;padding:0 20px 110px}
+.form-scroll::-webkit-scrollbar{display:none}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.field input,.field select{width:100%;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select option{background:var(--s2)}
+.field-row{display:flex;gap:10px}
+.field-row .field{flex:1}
+.field-hint{font-size:11px;color:var(--muted);margin-top:4px}
+.form-pill{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:18px}
+.form-pill-emoji{font-size:20px}
+.form-pill-info{flex:1}
+.form-pill-name{font-size:14px;font-weight:600}
+.form-pill-cat{font-size:11px;color:var(--muted);margin-top:1px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:14px;cursor:pointer}
+.toggle-label{font-size:14px;font-weight:500}
+.toggle-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.toggle{width:44px;height:26px;border-radius:13px;background:var(--s3);position:relative;transition:background .25s;flex-shrink:0;border:none;cursor:pointer}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.toggle.on::after{transform:translateX(18px)}
+.save-bar{position:absolute;bottom:0;left:0;right:0;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:rgba(8,8,16,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border)}
+.save-btn{width:100%;padding:14px;background:var(--accent);border:none;border-radius:13px;color:white;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 18px var(--accent-glow);transition:opacity .15s,transform .1s}
+.save-btn:active{opacity:.85;transform:scale(.98)}
+.save-btn:disabled{opacity:.5;cursor:not-allowed}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.mini-modal{background:var(--s1);border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:8px 20px calc(28px + env(safe-area-inset-bottom));animation:slideUp .28s ease;max-height:88dvh;overflow-y:auto}
+.mini-modal::-webkit-scrollbar{display:none}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 18px}
+.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.btn-cancel{flex:1;padding:12px;background:var(--s2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
+.btn-ok{flex:2;padding:12px;background:var(--accent);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.emoji-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+.epick{width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--s2);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.epick.sel{border-color:var(--accent);background:var(--accent-glow)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .ei{font-size:36px;margin-bottom:10px}
+.empty-state p{font-size:13px;line-height:1.5}
+.snack{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--s2);border:1px solid var(--border2);padding:10px 18px;border-radius:20px;font-size:13px;color:var(--text);z-index:300;opacity:0;transition:opacity .3s,transform .3s;white-space:nowrap;pointer-events:none}
+.snack.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
+.loading-screen.done{display:none}
+.spinner{width:40px;height:40px;border:3px solid var(--s3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:14px;color:var(--muted)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-left:6px;vertical-align:middle}
+.sync-dot.syncing{background:var(--yellow);animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.settings-section{margin:0 20px 20px}
+.settings-section h3{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.custom-item{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.custom-item-info{flex:1}
+.custom-item-name{font-size:14px;font-weight:600}
+.custom-item-kind{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* KWOTA TYPE SELECTOR */
+.kwota-type-row{display:flex;gap:8px;margin-bottom:14px}
+.kwota-type-btn{flex:1;padding:11px 8px;border-radius:12px;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-align:center;transition:all .2s}
+.kwota-type-btn.active{border-color:var(--accent);background:rgba(108,99,255,0.1);color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-txt">Łączenie z bazą danych…</div>
+</div>
+
+<!-- HOME -->
+<div class="screen hidden" id="sc-home">
+  <div class="scroll-body">
+    <div class="top-bar">
+      <h1>💳 Płatności <span class="sync-dot" id="sync-dot"></span></h1>
+      <div class="sub" id="home-date"></div>
+    </div>
+    <div class="home-hero">
+      <div class="hero-label">Szacowane wydatki / miesiąc</div>
+      <div class="hero-amount" id="hero-amount">0,00 <span>zł</span></div>
+      <div class="hero-row">
+        <div class="hero-stat"><div class="hero-stat-val" id="h-polisy">0</div><div class="hero-stat-lbl">Polisy</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="h-abon">0</div><div class="hero-stat-lbl">Abonamenty</div></div>
+        <div class="hero-stat"><div class="hero-stat-val c-green" id="h-paid">0</div><div class="hero-stat-lbl">Opłacone</div></div>
+      </div>
+    </div>
+    <div class="sec-lbl">⚡ Wymaga uwagi</div>
+    <div class="alerts" id="home-alerts"></div>
+    <div class="no-alerts" id="home-ok" style="display:none">✅ Wszystko pod kontrolą</div>
+    <div id="home-auto-wrap" style="display:none">
+      <div class="sec-lbl">🤖 Zbliżające się AUTO-odnowienia</div>
+      <div class="alerts" id="home-auto-list"></div>
+    </div>
+    <div id="home-upcoming-wrap" style="display:none">
+      <div class="sec-lbl">📋 Najbliższe wygaśnięcia</div>
+      <div class="list-pad" id="home-upcoming"></div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="goTo('home')"><div class="nav-icon">🏠</div>Główna</button>
+    <button class="nav-btn" onclick="goTo('lista')"><div class="nav-icon">📋</div>Lista</button>
+    <div class="nav-add"><button class="nav-add-btn" onclick="goTo('add')">＋</button></div>
+    <button class="nav-btn" onclick="goTo('oplaty')"><div class="nav-icon">🔄</div>Opłaty</button>
+    <button class="nav-btn" onclick="goTo('settings')"><div class="nav-icon">⚙️</div>Ustawienia</button>
+  </div>
+</div>
+
+<!-- LISTA -->
+<div class="screen hidden" id="sc-lista">
+  <div class="scroll-body">
+    <div class="top-bar"><h1>📋 Polisy & Abonamenty</h1></div>
+    <div class="sec-lbl">🛡️ Polisy & Ubezpieczenia</div>
+    <div class="list-pad" id="list-polisy"></div>
+    <div class="empty-state" id="empty-polisy" style="display:none"><div class="ei">🛡️</div><p>Brak polis.</p></div>
+    <div class="sec-lbl" style="margin-top:18px">📺 Abonamenty</div>
+    <div class="list-pad" id="list-abon"></div>
+    <div class="empty-state" id="empty-abon" style="display:none"><div class="ei">📺</div><p>Brak abonamentów.</p></div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" onclick="goTo('home')"><div class="nav-icon">🏠</div>Główna</button>
+    <button class="nav-btn active" onclick="goTo('lista')"><div class="nav-icon">📋</div>Lista</button>
+    <div class="nav-add"><button class="nav-add-btn" onclick="goTo('add')">＋</button></div>
+    <button class="nav-btn" onclick="goTo('oplaty')"><div class="nav-icon">🔄</div>Opłaty</button>
+    <button class="nav-btn" onclick="goTo('settings')"><div class="nav-icon">⚙️</div>Ustawienia</button>
+  </div>
+</div>
+
+<!-- OPŁATY -->
+<div class="screen hidden" id="sc-oplaty">
+  <div class="scroll-body">
+    <div class="top-bar"><h1>🔄 Opłaty cykliczne</h1></div>
+    <div class="list-pad" id="list-oplaty"></div>
+    <div class="empty-state" id="empty-oplaty" style="display:none"><div class="ei">🧾</div><p>Brak opłat. Dodaj przyciskiem +</p></div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" onclick="goTo('home')"><div class="nav-icon">🏠</div>Główna</button>
+    <button class="nav-btn" onclick="goTo('lista')"><div class="nav-icon">📋</div>Lista</button>
+    <div class="nav-add"><button class="nav-add-btn" onclick="goTo('add')">＋</button></div>
+    <button class="nav-btn active" onclick="goTo('oplaty')"><div class="nav-icon">🔄</div>Opłaty</button>
+    <button class="nav-btn" onclick="goTo('settings')"><div class="nav-icon">⚙️</div>Ustawienia</button>
+  </div>
+</div>
+
+<!-- ADD -->
+<div class="screen hidden" id="sc-add">
+  <div class="back-bar">
+    <button class="back-btn" onclick="goTo('home')">✕</button>
+    <h2>Co chcesz dodać?</h2>
+  </div>
+  <div class="add-scroll">
+    <div class="type-sec-lbl">🛡️ Polisy & Ubezpieczenia</div>
+    <div class="tiles" id="tiles-polisa"></div>
+    <div class="type-sec-lbl">📺 Abonamenty</div>
+    <div class="tiles" id="tiles-abon"></div>
+    <div class="type-sec-lbl">🔄 Opłaty cykliczne</div>
+    <div class="tiles" id="tiles-oplata"></div>
+  </div>
+</div>
+
+<!-- FORM SUB -->
+<div class="screen hidden" id="sc-form-sub">
+  <div class="back-bar">
+    <button class="back-btn" onclick="goTo('add')">←</button>
+    <h2 id="fsub-title">Nowa pozycja</h2>
+  </div>
+  <div class="form-scroll">
+    <div class="form-pill">
+      <div class="form-pill-emoji" id="fsub-emoji">🛡️</div>
+      <div class="form-pill-info">
+        <div class="form-pill-name" id="fsub-type-name">-</div>
+        <div class="form-pill-cat" id="fsub-cat-name">-</div>
+      </div>
+    </div>
+    <div class="field"><label>Nazwa własna (opcjonalna)</label><input id="fsub-name" type="text" placeholder="np. OC Fiat 500…"></div>
+    <div class="field-row">
+      <div class="field" id="fsub-start-wrap"><label>Data startu</label><input id="fsub-start" type="date"></div>
+      <div class="field"><label>Ważność</label>
+        <select id="fsub-duration" onchange="toggleStartDate('fsub')">
+          <option value="0">♾️ Do odwołania</option>
+          <option value="1">1 miesiąc</option><option value="3">3 miesiące</option>
+          <option value="6">6 miesięcy</option><option value="12" selected>12 miesięcy</option>
+          <option value="24">24 miesiące</option><option value="36">36 miesięcy</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" id="fsub-enddate-wrap" style="display:none">
+      <label>Data końca umowy (opcjonalnie)</label>
+      <input id="fsub-enddate" type="date">
+      <div class="field-hint">Zostaw puste jeśli umowa jest bezterminowa</div>
+    </div>
+    <div class="field" id="fsub-billing-wrap" style="display:none">
+      <label>Cykl rozliczeniowy</label>
+      <select id="fsub-billing">
+        <option value="1">Co miesiąc</option>
+        <option value="3">Co 3 miesiące</option>
+        <option value="6">Co pół roku</option>
+        <option value="12">Co rok</option>
+      </select>
+      <div class="field-hint">Co ile miesięcy pobierana jest płatność</div>
+    </div>
+    <div class="field" id="fsub-lastpay-wrap" style="display:none">
+      <label>Data ostatniej płatności</label>
+      <input id="fsub-lastpay" type="date">
+      <div class="field-hint">Od kiedy liczyć następną płatność</div>
+    </div>
+    <div class="field"><label>Kwota (zł)</label><input id="fsub-amount" type="number" placeholder="0,00" step="0.01" min="0"></div>
+    <div class="toggle-row" onclick="toggleAuto('fsub-auto-toggle')">
+      <div><div class="toggle-label">💳 Płatność automatyczna</div><div class="toggle-sub">Karta pobiera sama</div></div>
+      <button class="toggle" id="fsub-auto-toggle"></button>
+    </div>
+  </div>
+  <div class="save-bar"><button class="save-btn" id="fsub-save-btn" onclick="saveSub()">Zapisz</button></div>
+</div>
+
+<!-- FORM OPŁATA -->
+<div class="screen hidden" id="sc-form-oplata">
+  <div class="back-bar">
+    <button class="back-btn" onclick="goTo('add')">←</button>
+    <h2 id="fopl-title">Nowa opłata</h2>
+  </div>
+  <div class="form-scroll">
+    <div class="form-pill">
+      <div class="form-pill-emoji" id="fopl-emoji">🏠</div>
+      <div class="form-pill-info">
+        <div class="form-pill-name" id="fopl-type-name">-</div>
+        <div class="form-pill-cat">Opłaty cykliczne</div>
+      </div>
+    </div>
+    <div class="field"><label>Nazwa własna (opcjonalna)</label><input id="fopl-name" type="text" placeholder="np. Czynsz ul. Kwiatowa…"></div>
+    <div class="field"><label>Typ kwoty</label></div>
+    <div class="kwota-type-row">
+      <button class="kwota-type-btn active" id="kwota-stala-btn" onclick="setKwotaType('stala')">💰 Stała kwota<br><span style="font-size:10px;opacity:.7">zawsze ta sama</span></button>
+      <button class="kwota-type-btn" id="kwota-zmienna-btn" onclick="setKwotaType('zmienna')">📊 Zmienna kwota<br><span style="font-size:10px;opacity:.7">wpisujesz co miesiąc</span></button>
+    </div>
+    <div class="field" id="fopl-amount-wrap"><label>Kwota (zł)</label><input id="fopl-amount" type="number" placeholder="0,00" step="0.01" min="0"></div>
+    <div class="field"><label>Częstotliwość</label>
+      <select id="fopl-freq">
+        <option value="1">Co miesiąc</option><option value="2">Co 2 miesiące</option>
+        <option value="3">Co kwartał</option><option value="6">Co pół roku</option>
+      </select>
+    </div>
+    <div class="toggle-row" onclick="toggleAuto('fopl-auto-toggle')">
+      <div><div class="toggle-label">💳 Płatność automatyczna</div><div class="toggle-sub">Przelew stały / autopłatność</div></div>
+      <button class="toggle" id="fopl-auto-toggle"></button>
+    </div>
+  </div>
+  <div class="save-bar"><button class="save-btn" id="fopl-save-btn" onclick="saveOplata()">Zapisz</button></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen hidden" id="sc-settings">
+  <div class="scroll-body">
+    <div class="top-bar"><h1>⚙️ Ustawienia</h1></div>
+    <div class="settings-section">
+      <h3>Własne kategorie</h3>
+      <div id="custom-list"></div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" onclick="goTo('home')"><div class="nav-icon">🏠</div>Główna</button>
+    <button class="nav-btn" onclick="goTo('lista')"><div class="nav-icon">📋</div>Lista</button>
+    <div class="nav-add"><button class="nav-add-btn" onclick="goTo('add')">＋</button></div>
+    <button class="nav-btn" onclick="goTo('oplaty')"><div class="nav-icon">🔄</div>Opłaty</button>
+    <button class="nav-btn active" onclick="goTo('settings')"><div class="nav-icon">⚙️</div>Ustawienia</button>
+  </div>
+</div>
+
+<!-- MODAL: CUSTOM TYPE -->
+<div class="overlay" id="modal-custom" onclick="closeIf(event,'modal-custom')">
+  <div class="mini-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nowa kategoria</div>
+    <div class="field"><label>Sekcja</label>
+      <select id="ct-kind">
+        <option value="polisa">🛡️ Polisa / Ubezpieczenie</option>
+        <option value="abon">📺 Abonament</option>
+        <option value="oplata">🔄 Opłata cykliczna</option>
+      </select>
+    </div>
+    <div class="field"><label>Nazwa</label><input id="ct-name" type="text" placeholder="np. Antywirus, Parking…"></div>
+    <div class="field">
+      <label>Emoji (opcjonalne)</label>
+      <div class="emoji-grid" id="emoji-grid"></div>
+      <input id="ct-emoji-input" type="text" placeholder="lub wpisz własne emoji" style="margin-top:8px;width:100%;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-size:18px;outline:none" maxlength="2">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-custom')">Anuluj</button>
+      <button class="btn-ok" onclick="saveCustomType()">Dodaj</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ZAPŁAĆ (zmienna kwota) -->
+<div class="overlay" id="modal-pay" onclick="closeIf(event,'modal-pay')">
+  <div class="mini-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-pay-title">Zapłać rachunek</div>
+    <div class="field"><label>Kwota (zł)</label><input id="pay-amount" type="number" placeholder="0,00" step="0.01" min="0"></div>
+    <div class="field"><label>Data płatności</label><input id="pay-date" type="date"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-pay')">Anuluj</button>
+      <button class="btn-ok" onclick="confirmPay()">Opłacono ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ZAPŁAĆ (stała kwota) -->
+<div class="overlay" id="modal-pay-fixed" onclick="closeIf(event,'modal-pay-fixed')">
+  <div class="mini-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-pay-fixed-title">Potwierdź płatność</div>
+    <div class="field"><label>Data płatności</label><input id="pay-fixed-date" type="date"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-pay-fixed')">Anuluj</button>
+      <button class="btn-ok" onclick="confirmPayFixed()">Opłacono ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT SUB -->
+<div class="overlay" id="modal-edit-sub" onclick="closeIf(event,'modal-edit-sub')">
+  <div class="mini-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edytuj</div>
+    <input type="hidden" id="es-id">
+    <div class="field"><label>Nazwa</label><input id="es-name" type="text"></div>
+    <div class="field-row">
+      <div class="field"><label>Data startu</label><input id="es-start" type="date"></div>
+      <div class="field"><label>Ważność</label>
+        <select id="es-duration">
+          <option value="0">♾️ Do odwołania</option>
+          <option value="1">1 mies.</option><option value="3">3 mies.</option>
+          <option value="6">6 mies.</option><option value="12">12 mies.</option>
+          <option value="24">24 mies.</option><option value="36">36 mies.</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Kwota (zł)</label><input id="es-amount" type="number" step="0.01"></div>
+    <div class="field" id="es-enddate-wrap" style="display:none">
+      <label>Data końca umowy (opcjonalnie)</label>
+      <input id="es-enddate" type="date">
+    </div>
+    <div class="toggle-row" onclick="toggleAuto('es-auto-toggle')">
+      <div><div class="toggle-label">💳 Płatność automatyczna</div></div>
+      <button class="toggle" id="es-auto-toggle"></button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-sub')">Anuluj</button>
+      <button class="btn-ok" onclick="updateSub()">Zapisz</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT OPŁATA -->
+<div class="overlay" id="modal-edit-opl" onclick="closeIf(event,'modal-edit-opl')">
+  <div class="mini-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edytuj</div>
+    <input type="hidden" id="eo-id">
+    <div class="field"><label>Nazwa</label><input id="eo-name" type="text"></div>
+    <div class="field"><label>Typ kwoty</label></div>
+    <div class="kwota-type-row">
+      <button class="kwota-type-btn" id="eo-kwota-stala-btn" onclick="setKwotaTypeEdit('stala')">💰 Stała</button>
+      <button class="kwota-type-btn" id="eo-kwota-zmienna-btn" onclick="setKwotaTypeEdit('zmienna')">📊 Zmienna</button>
+    </div>
+    <div class="field" id="eo-amount-wrap"><label>Kwota (zł)</label><input id="eo-amount" type="number" step="0.01"></div>
+    <div class="field"><label>Częstotliwość</label>
+      <select id="eo-freq">
+        <option value="1">Co miesiąc</option><option value="2">Co 2 mies.</option>
+        <option value="3">Co kwartał</option><option value="6">Co pół roku</option>
+      </select>
+    </div>
+    <div class="toggle-row" onclick="toggleAuto('eo-auto-toggle')">
+      <div><div class="toggle-label">💳 Płatność automatyczna</div></div>
+      <button class="toggle" id="eo-auto-toggle"></button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-opl')">Anuluj</button>
+      <button class="btn-ok" onclick="updateOpl()">Zapisz</button>
+    </div>
+  </div>
+</div>
+
+<div class="snack" id="snack"></div>
+
+<script>
+const SUPA_URL='https://mxoaqezlhimaiooyjdpj.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14b2FxZXpsaGltYWlvb3lqZHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzIwMTYsImV4cCI6MjA5NjMwODAxNn0.8jinSHnyNoBVTD2mrjEYh3hADe-fEHbU2fgNiN_XBVU';
+
+async function db(table,method='GET',body=null,extra=''){
+  setSyncing(true);
+  try{
+    const r=await fetch(`${SUPA_URL}/rest/v1/${table}${extra}`,{
+      method,
+      headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},
+      body:body?JSON.stringify(body):null
+    });
+    if(!r.ok){const e=await r.text();throw new Error(e);}
+    if(method==='DELETE'||(method==='PATCH'&&!r.headers.get('content-type')?.includes('json')))return true;
+    const txt=await r.text();
+    return txt?JSON.parse(txt):true;
+  }catch(e){snack('Błąd połączenia ❌');console.error(e);return null;}
+  finally{setSyncing(false);}
+}
+
+let subs=[],oplaty=[],payments=[],customTypes=[];
+let pendingPayId=null,pendingPayMk=null,pendingPayFixed=null;
+let selectedTypeId=null,selectedTypeKind=null,selectedEmoji='';
+let kwotaType='stala';
+const AUTO_ALERT_DAYS=7;
+const EMOJIS=['🛡️','🚗','🏠','📱','💻','🎵','📺','🏋️','🦷','💊','⚡','💧','🔥','🌐','🗑️','📦','🎮','🎬','📰','✈️','🐾','🔒'];
+
+const DEFAULTS={
+  polisa:[
+    {id:'oc',name:'Polisa OC/AC',emoji:'🚗',kind:'polisa'},
+    {id:'zycie',name:'Ubezp. życiowe',emoji:'❤️',kind:'polisa'},
+    {id:'mieszk',name:'Ubezp. mieszkania',emoji:'🏠',kind:'polisa'},
+    {id:'zdrowie',name:'Ubezp. zdrowotne',emoji:'🏥',kind:'polisa'},
+    {id:'inne_p',name:'Inne',emoji:'🛡️',kind:'polisa'},
+  ],
+  abon:[
+    {id:'netflix',name:'Netflix',emoji:'🎬',kind:'abon'},
+    {id:'spotify',name:'Spotify',emoji:'🎵',kind:'abon'},
+    {id:'claude',name:'Claude',emoji:'🤖',kind:'abon'},
+    {id:'disney',name:'Disney+',emoji:'✨',kind:'abon'},
+    {id:'hbo',name:'HBO Max',emoji:'📺',kind:'abon'},
+    {id:'yt',name:'YouTube Premium',emoji:'▶️',kind:'abon'},
+    {id:'silownia',name:'Siłownia',emoji:'🏋️',kind:'abon'},
+    {id:'antywirus',name:'Antywirus',emoji:'🔒',kind:'abon'},
+    {id:'inne_a',name:'Inne',emoji:'📦',kind:'abon'},
+  ],
+  oplata:[
+    {id:'czynsz',name:'Czynsz',emoji:'🏠',kind:'oplata'},
+    {id:'prad',name:'Prąd',emoji:'⚡',kind:'oplata'},
+    {id:'gaz',name:'Gaz',emoji:'🔥',kind:'oplata'},
+    {id:'woda',name:'Woda',emoji:'💧',kind:'oplata'},
+    {id:'internet',name:'Internet',emoji:'🌐',kind:'oplata'},
+    {id:'telefon',name:'Telefon',emoji:'📱',kind:'oplata'},
+    {id:'smieci',name:'Śmieci',emoji:'🗑️',kind:'oplata'},
+    {id:'tv',name:'TV kablowa',emoji:'📡',kind:'oplata'},
+    {id:'inne_o',name:'Inne',emoji:'📦',kind:'oplata'},
+  ]
+};
+
+function allOfKind(k){return[...DEFAULTS[k],...customTypes.filter(t=>t.kind===k)];}
+function getType(id){return[...DEFAULTS.polisa,...DEFAULTS.abon,...DEFAULTS.oplata,...customTypes].find(t=>t.id===id);}
+function monthKey(d){const dt=d||new Date();return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;}
+function today(){return new Date().toISOString().split('T')[0];}
+function expiryDate(s){const d=new Date(s.start_date);d.setMonth(d.getMonth()+s.duration);return d;}
+function fmtAmt(n){return Number(n).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function setSyncing(v){document.getElementById('sync-dot')?.classList.toggle('syncing',v);}
+function monthLabel(mk){const[y,m]=mk.split('-');return new Date(y,m-1,1).toLocaleDateString('pl-PL',{month:'long',year:'numeric'});}
+
+// 3 last months including current
+function last3Months(){
+  const now=new Date();
+  return[0,1,2].map(i=>{
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    return monthKey(d);
+  });
+}
+
+function isCurrentMonth(mk){return mk===monthKey(new Date());}
+
+async function init(){
+  const[s,o,p,c]=await Promise.all([
+    db('subs','GET',null,'?order=created_at'),
+    db('oplaty','GET',null,'?order=created_at'),
+    db('payments','GET',null,'?order=created_at'),
+    db('custom_types','GET',null,'?order=created_at'),
+  ]);
+  subs=s||[];oplaty=o||[];payments=p||[];customTypes=c||[];
+  document.getElementById('loading').classList.add('done');
+  goTo('home');
+}
+
+const SCREENS=['home','lista','oplaty','add','form-sub','form-oplata','settings'];
+function goTo(name){
+  SCREENS.forEach(s=>{const el=document.getElementById('sc-'+s);if(el)el.classList.toggle('hidden',s!==name);});
+  if(name==='home')renderHome();
+  if(name==='lista')renderLista();
+  if(name==='oplaty')renderOplaty();
+  if(name==='add')renderTiles();
+  if(name==='settings')renderSettings();
+}
+
+function renderTiles(){
+  ['polisa','abon','oplata'].forEach(kind=>{
+    document.getElementById('tiles-'+kind).innerHTML=allOfKind(kind).map(t=>
+      `<div class="tile" onclick="selectType('${t.id}','${kind}')">
+        <div class="tile-icon">${t.emoji}</div><div class="tile-name">${t.name}</div>
+      </div>`
+    ).join('')+`<div class="tile tile-add" onclick="openAddCustom('${kind}')">
+      <div class="tile-icon">＋</div><div class="tile-name">Dodaj nową</div>
+    </div>`;
+  });
+}
+
+function selectType(id,kind){
+  selectedTypeId=id;selectedTypeKind=kind;
+  const t=getType(id);
+  if(kind==='oplata'){
+    document.getElementById('fopl-emoji').textContent=t.emoji;
+    document.getElementById('fopl-type-name').textContent=t.name;
+    document.getElementById('fopl-title').textContent=t.name;
+    document.getElementById('fopl-name').value='';
+    document.getElementById('fopl-amount').value='';
+    document.getElementById('fopl-freq').value='1';
+    setToggle('fopl-auto-toggle',false);
+    setKwotaType('stala');
+    goTo('form-oplata');
+  }else{
+    const cat=kind==='polisa'?'Polisy & Ubezpieczenia':'Abonamenty';
+    document.getElementById('fsub-emoji').textContent=t.emoji;
+    document.getElementById('fsub-type-name').textContent=t.name;
+    document.getElementById('fsub-cat-name').textContent=cat;
+    document.getElementById('fsub-title').textContent=t.name;
+    document.getElementById('fsub-name').value='';
+    document.getElementById('fsub-start').value=today();
+    document.getElementById('fsub-duration').value=kind==='abon'?'0':'12';
+    toggleStartDate('fsub');
+    document.getElementById('fsub-amount').value='';
+    setToggle('fsub-auto-toggle',false);
+    goTo('form-sub');
+  }
+}
+
+function setKwotaType(type){
+  kwotaType=type;
+  document.getElementById('kwota-stala-btn').classList.toggle('active',type==='stala');
+  document.getElementById('kwota-zmienna-btn').classList.toggle('active',type==='zmienna');
+  document.getElementById('fopl-amount-wrap').style.display=type==='stala'?'block':'none';
+}
+
+function setKwotaTypeEdit(type){
+  document.getElementById('eo-kwota-stala-btn').classList.toggle('active',type==='stala');
+  document.getElementById('eo-kwota-zmienna-btn').classList.toggle('active',type==='zmienna');
+  document.getElementById('eo-amount-wrap').style.display=type==='stala'?'block':'none';
+  document.getElementById('eo-id').dataset.kwotaType=type;
+}
+
+function toggleStartDate(prefix){
+  const val=document.getElementById(prefix+'-duration').value;
+  const isForever=val==='0';
+  const startWrap=document.getElementById(prefix+'-start-wrap');
+  const endWrap=document.getElementById(prefix+'-enddate-wrap');
+  const billWrap=document.getElementById(prefix+'-billing-wrap');
+  const lastWrap=document.getElementById(prefix+'-lastpay-wrap');
+  if(startWrap) startWrap.style.display=isForever?'none':'block';
+  if(endWrap) endWrap.style.display=isForever?'block':'none';
+  if(billWrap) billWrap.style.display=isForever?'block':'none';
+  if(lastWrap) lastWrap.style.display=isForever?'block':'none';
+  if(isForever){
+    const inp=document.getElementById(prefix+'-enddate');
+    if(inp) inp.value='';
+    const lp=document.getElementById(prefix+'-lastpay');
+    if(lp) lp.value=today();
+  }
+}
+
+function setToggle(id,val){document.getElementById(id).classList.toggle('on',!!val);}
+function getToggle(id){return document.getElementById(id).classList.contains('on');}
+function toggleAuto(id){document.getElementById(id).classList.toggle('on');}
+
+async function saveSub(){
+  const btn=document.getElementById('fsub-save-btn');
+  btn.disabled=true;btn.textContent='Zapisuję…';
+  const t=getType(selectedTypeId);
+  const name=document.getElementById('fsub-name').value.trim()||t.name;
+  const duration=parseInt(document.getElementById('fsub-duration').value);
+  const isForever=duration===0;
+  const endDate=isForever?(document.getElementById('fsub-enddate').value||null):null;
+  const billingCycle=isForever?parseInt(document.getElementById('fsub-billing').value):null;
+  const lastPayment=isForever?(document.getElementById('fsub-lastpay').value||null):null;
+  const obj={
+    id:Date.now().toString(),type_id:selectedTypeId,kind:selectedTypeKind,
+    name,emoji:t.emoji,
+    start_date:isForever?today():document.getElementById('fsub-start').value,
+    duration:isForever?0:duration,
+    end_date:endDate,
+    billing_cycle:billingCycle,
+    last_payment:lastPayment,
+    amount:parseFloat(document.getElementById('fsub-amount').value)||null,
+    auto:getToggle('fsub-auto-toggle'),
+  };
+  const res=await db('subs','POST',obj);
+  if(res){subs.push(Array.isArray(res)?res[0]:obj);goTo('lista');snack('Dodano: '+name+' ✓');}
+  btn.disabled=false;btn.textContent='Zapisz';
+}
+
+async function saveOplata(){
+  const btn=document.getElementById('fopl-save-btn');
+  btn.disabled=true;btn.textContent='Zapisuję…';
+  const t=getType(selectedTypeId);
+  const name=document.getElementById('fopl-name').value.trim()||t.name;
+  const isVariable=kwotaType==='zmienna';
+  const obj={id:Date.now().toString(),type_id:selectedTypeId,name,emoji:t.emoji,freq:parseInt(document.getElementById('fopl-freq').value),amount:isVariable?null:(parseFloat(document.getElementById('fopl-amount').value)||null),variable:isVariable,auto:getToggle('fopl-auto-toggle')};
+  const res=await db('oplaty','POST',obj);
+  if(res){oplaty.push(Array.isArray(res)?res[0]:obj);goTo('oplaty');snack('Dodano: '+name+' ✓');}
+  btn.disabled=false;btn.textContent='Zapisz';
+}
+
+// ══ RENDER HOME ══
+function renderHome(){
+  document.getElementById('home-date').textContent=new Date().toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const now=new Date(),mk=monthKey(now);
+  let total=0;
+  subs.forEach(s=>{
+    if(!s.amount) return;
+    const isForever=!s.duration||s.duration==0;
+    if(isForever){
+      // for forever subs use billing_cycle to estimate monthly cost
+      const cycle=s.billing_cycle||1;
+      total+=s.amount/cycle;
+    } else {
+      total+=s.amount/s.duration;
+    }
+  });
+  oplaty.forEach(o=>{if(o.amount&&!o.variable){const d=(now.getFullYear()-2020)*12+now.getMonth();if(d%o.freq===0)total+=o.amount;}});
+  document.getElementById('hero-amount').innerHTML=fmtAmt(total)+' <span>zł</span>';
+  document.getElementById('h-polisy').textContent=subs.filter(s=>s.kind==='polisa').length;
+  document.getElementById('h-abon').textContent=subs.filter(s=>s.kind==='abon').length;
+  document.getElementById('h-paid').textContent=payments.filter(p=>p.month_key===mk).length;
+
+  const alerts=[],autoAlerts=[];
+  subs.forEach(s=>{
+    const end=expiryDate(s),days=Math.ceil((end-now)/86400000);
+    if(days<0&&!s.auto)alerts.push({cls:'a-red',icon:s.emoji,title:s.name+' — WYGASŁA',sub:'Wygasła '+Math.abs(days)+' dni temu',sc:'lista'});
+    else if(days<0&&s.auto)alerts.push({cls:'a-purple',icon:s.emoji,title:s.name+' — AUTO odnowiona',sub:'Sprawdź czy pobrano z karty',sc:'lista'});
+    else if(days<=30&&!s.auto)alerts.push({cls:'a-yellow',icon:s.emoji,title:s.name+' — wygasa wkrótce',sub:'Zostało '+days+' dni',sc:'lista'});
+    if(days>0&&days<=AUTO_ALERT_DAYS&&s.auto)autoAlerts.push({icon:s.emoji,name:s.name,days,end});
+  });
+
+  // opłaty pending
+  oplaty.forEach(o=>{
+    const d=(now.getFullYear()-2020)*12+now.getMonth();
+    if(d%o.freq!==0)return;
+    const paid=payments.find(p=>p.oplata_id===o.id&&p.month_key===mk);
+    if(!paid&&!o.auto){
+      if(o.variable)alerts.push({cls:'a-yellow',icon:o.emoji,title:o.name+' — czeka na rachunek',sub:'Wpisz kwotę gdy przyjdzie rachunek',sc:'oplaty'});
+      else alerts.push({cls:'a-yellow',icon:o.emoji,title:o.name+' — nieopłacona',sub:'Stała kwota: '+(o.amount?fmtAmt(o.amount)+' zł':'brak'),sc:'oplaty'});
+    }
+  });
+
+  const alertsEl=document.getElementById('home-alerts'),okEl=document.getElementById('home-ok');
+  alertsEl.innerHTML=alerts.map(a=>`<div class="alert-card ${a.cls}" onclick="goTo('${a.sc}')">
+    <div class="alert-icon">${a.icon}</div>
+    <div class="alert-body"><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div>
+    <div class="alert-arr">›</div>
+  </div>`).join('');
+  okEl.style.display=alerts.length?'none':'block';
+
+  const autoWrap=document.getElementById('home-auto-wrap');
+  document.getElementById('home-auto-list').innerHTML=autoAlerts.map(a=>`
+    <div class="alert-card a-purple" onclick="goTo('lista')">
+      <div class="alert-icon">${a.icon}</div>
+      <div class="alert-body"><div class="alert-title">🤖 ${a.name} — AUTO za ${a.days} dni</div>
+      <div class="alert-sub">Odnowienie ${a.end.toLocaleDateString('pl-PL')} · Anuluj jeśli nie chcesz</div></div>
+      <div class="alert-arr">›</div>
+    </div>`).join('');
+  autoWrap.style.display=autoAlerts.length?'block':'none';
+
+  const sorted=[...subs].sort((a,b)=>expiryDate(a)-expiryDate(b)).filter(s=>Math.ceil((expiryDate(s)-now)/86400000)>=0).slice(0,3);
+  const upWrap=document.getElementById('home-upcoming-wrap');
+  document.getElementById('home-upcoming').innerHTML=sorted.map(s=>subCard(s,true)).join('');
+  upWrap.style.display=sorted.length?'block':'none';
+}
+
+function renderLista(){
+  const polisy=subs.filter(s=>s.kind==='polisa'),abon=subs.filter(s=>s.kind==='abon');
+  document.getElementById('list-polisy').innerHTML=polisy.map(s=>subCard(s,false)).join('');
+  document.getElementById('empty-polisy').style.display=polisy.length?'none':'block';
+  document.getElementById('list-abon').innerHTML=abon.map(s=>subCard(s,false)).join('');
+  document.getElementById('empty-abon').style.display=abon.length?'none':'block';
+}
+
+function nextPaymentDays(s){
+  if(!s.billing_cycle||!s.last_payment) return null;
+  const last=new Date(s.last_payment);
+  const next=new Date(last);
+  next.setMonth(next.getMonth()+s.billing_cycle);
+  const now=new Date();
+  // if next is in the past, keep adding cycles until future
+  while(next<=now) next.setMonth(next.getMonth()+s.billing_cycle);
+  return{days:Math.ceil((next-now)/86400000),date:next};
+}
+
+function subCard(s,compact){
+  const now=new Date();
+  const isForever=!s.duration||s.duration==0;
+  const hasEndDate=isForever&&s.end_date;
+  const end=hasEndDate?new Date(s.end_date):isForever?null:expiryDate(s);
+  const start=new Date(s.start_date||now);
+  const days=end?Math.ceil((end-now)/86400000):null;
+  const total=end?Math.ceil((end-start)/86400000):null;
+  const pct=total?Math.max(0,Math.min(100,(days/total)*100)):0;
+  let cls,fillCls,badge='';
+  if(isForever&&!hasEndDate){cls='c-green';fillCls='f-green';badge=`<span class="badge b-green">Aktywny</span>`;}
+  else if(days<0){cls='c-red';fillCls='f-red';badge=`<span class="badge b-red">Wygasła</span>`;}
+  else if(days<=30){cls='c-yellow';fillCls='f-yellow';badge=`<span class="badge b-yellow">Wkrótce</span>`;}
+  else{cls='c-green';fillCls='f-green';}
+  const autoBadge=s.auto?`<span class="badge b-auto">AUTO</span>`:'';
+  const daysText=(isForever&&!hasEndDate)?'Do odwołania':days<0?`Wygasła ${Math.abs(days)} dni temu`:days===0?'Wygasa dziś!':`Zostało ${days} dni`;
+  const metaDuration=isForever?(hasEndDate?'Do '+new Date(s.end_date).toLocaleDateString('pl-PL'):'Do odwołania'):s.duration+' mies.';
+  const meta=[metaDuration,s.amount?fmtAmt(s.amount)+' zł':null].filter(Boolean).join(' · ');
+  const btns=compact?'':`<div class="card-btns"><button class="ibtn" onclick="openEditSub('${s.id}')">✏️</button><button class="ibtn" onclick="delSub('${s.id}')">🗑</button></div>`;
+  const showBar=!isForever||hasEndDate;
+  const progressBar=showBar?`<div class="prog-track"><div class="prog-fill ${fillCls}" style="width:${pct}%"></div></div>`:'';
+  const endTxt=end?`<span style="font-size:11px;color:var(--muted)">do ${end.toLocaleDateString('pl-PL')}</span>`:'';
+
+  // next payment row for forever+auto subs
+  let nextPayRow='';
+  if(isForever&&!hasEndDate&&s.billing_cycle){
+    const np=nextPaymentDays(s);
+    if(np){
+      const npCls=np.days<=3?'c-red':np.days<=7?'c-yellow':'c-green';
+      nextPayRow=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--muted)">💳 Następna płatność</span>
+        <span style="font-size:12px;font-weight:600" class="${npCls}">za ${np.days} dni · ${np.date.toLocaleDateString('pl-PL')}</span>
+      </div>`;
+    }
+  }
+
+  return`<div class="card"><div class="card-head"><div class="card-left"><div class="card-emoji">${s.emoji}</div><div class="card-info"><div class="card-name">${s.name} ${badge} ${autoBadge}</div><div class="card-meta">${meta}</div></div></div>${btns}</div>
+  <div class="prog-wrap"><div class="prog-labels"><span class="prog-days ${cls}">${daysText}</span>${endTxt}</div>${progressBar}</div>${nextPayRow}</div>`;
+}
+
+// ══ RENDER OPŁATY — nowy system z historią ══
+function renderOplaty(){
+  const list=document.getElementById('list-oplaty'),empty=document.getElementById('empty-oplaty');
+  list.innerHTML='';empty.style.display='none';
+  if(!oplaty.length){empty.style.display='block';return;}
+  const months=last3Months(); // [current, prev1, prev2]
+  const now=new Date();
+
+  list.innerHTML=oplaty.map(o=>{
+    const autoBadge=o.auto?`<span class="badge b-auto">AUTO</span>`:'';
+    const varBadge=o.variable?`<span class="badge b-variable">ZMIENNA</span>`:'';
+    const freqTxt=o.freq===1?'Co miesiąc':`Co ${o.freq} mies.`;
+    const baseAmtTxt=o.amount?fmtAmt(o.amount)+' zł':'—';
+
+    // build month rows — current always, previous only if paid, paid outside cycle also shown
+    const paidMonths=payments.filter(p=>p.oplata_id===o.id).map(p=>p.month_key);
+    const allMonths=[...new Set([...months, ...paidMonths])].sort().reverse().slice(0,3);
+    const monthRows=allMonths.filter(mk=>{
+      const[y,m]=mk.split('-').map(Number);
+      const d=(y-2020)*12+(m-1);
+      const isRequired=d%o.freq===0;
+      if(isCurrentMonth(mk)) return true;
+      if(payments.some(p=>p.oplata_id===o.id&&p.month_key===mk)) return true;
+      return isRequired;
+    }).map(mk=>{
+      const isCurrent=isCurrentMonth(mk);
+      const pmt=payments.find(p=>p.oplata_id===o.id&&p.month_key===mk);
+      const isPaid=!!pmt;
+      const lbl=isCurrent?'Ten miesiąc':monthLabel(mk);
+
+      if(o.auto){
+        return`<div class="month-row${isCurrent?' current':''}">
+          <div class="month-row-left">
+            <div class="month-dot dot-green"></div>
+            <div><div class="month-label">${lbl}</div><div class="month-date" style="color:var(--purple)">Automatyczna</div></div>
+          </div>
+          <div class="month-amount">${o.variable?(pmt?fmtAmt(pmt.amount)+' zł':'—'):baseAmtTxt}</div>
+        </div>`;
+      }
+
+      if(isPaid){
+        const amtShow=o.variable?(pmt.amount?fmtAmt(pmt.amount)+' zł':'—'):baseAmtTxt;
+        return`<div class="month-row${isCurrent?' current':''}">
+          <div class="month-row-left">
+            <div class="month-dot dot-green"></div>
+            <div><div class="month-label">${lbl}</div><div class="month-date">Zapłacono ${new Date(pmt.paid_date).toLocaleDateString('pl-PL')}</div></div>
+          </div>
+          <div class="month-action">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="month-amount">${amtShow}</span>
+              <div class="paid-check" onclick="unpay('${pmt.id}')">✓</div>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      // unpaid
+      if(o.variable){
+        return`<div class="month-row${isCurrent?' current':''}">
+          <div class="month-row-left">
+            <div class="month-dot dot-yellow"></div>
+            <div><div class="month-label">${lbl}</div><div class="month-pending">${isCurrent?'Czeka na rachunek':'Nie opłacono'}</div></div>
+          </div>
+          <div class="month-action"><button class="pay-btn" onclick="openPayVariable('${o.id}','${mk}','${o.name}')">Wpisz</button></div>
+        </div>`;
+      }else{
+        return`<div class="month-row${isCurrent?' current':''}">
+          <div class="month-row-left">
+            <div class="month-dot dot-yellow"></div>
+            <div><div class="month-label">${lbl}</div><div class="month-pending">${isCurrent?'Do opłacenia':'Nie opłacono'}</div></div>
+          </div>
+          <div class="month-action">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="month-amount muted">${baseAmtTxt}</span>
+              <button class="pay-btn" onclick="openPayFixed('${o.id}','${mk}','${o.name}','${o.amount||0}')">Zapłać</button>
+            </div>
+          </div>
+        </div>`;
+      }
+    }).join('');
+
+    return`<div class="oplata-card">
+      <div class="oplata-card-head">
+        <div class="card-left">
+          <div class="card-emoji">${o.emoji}</div>
+          <div class="card-info">
+            <div class="card-name">${o.name} ${autoBadge} ${varBadge}</div>
+            <div class="card-meta">${freqTxt}${o.amount&&!o.variable?' · '+fmtAmt(o.amount)+' zł':''}</div>
+          </div>
+        </div>
+        <div class="card-btns">
+          <button class="ibtn" onclick="openEditOpl('${o.id}')">✏️</button>
+          <button class="ibtn" onclick="delOpl('${o.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="oplata-months">${monthRows||''}</div>
+      ${!monthRows&&o.variable?`<div style="padding:10px 14px;border-top:1px solid var(--border)">
+        <button class="pay-btn" style="width:100%" onclick="openPayVariable('${o.id}','${monthKey(new Date())}','${o.name}')">+ Dodaj płatność za ${monthLabel(monthKey(new Date()))}</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══ PAY ACTIONS ══
+function openPayVariable(id,mk,name){
+  pendingPayId=id;pendingPayMk=mk;
+  document.getElementById('modal-pay-title').textContent=name+' — '+monthLabel(mk);
+  document.getElementById('pay-amount').value='';
+  document.getElementById('pay-date').value=today();
+  openModal('modal-pay');
+}
+
+function openPayFixed(id,mk,name,amount){
+  pendingPayFixed={id,mk,amount:parseFloat(amount)||null};
+  document.getElementById('modal-pay-fixed-title').textContent=name+' — '+monthLabel(mk);
+  document.getElementById('pay-fixed-date').value=today();
+  openModal('modal-pay-fixed');
+}
+
+async function confirmPay(){
+  const amount=parseFloat(document.getElementById('pay-amount').value)||null;
+  const paid_date=document.getElementById('pay-date').value;
+  const obj={id:Date.now().toString(),oplata_id:pendingPayId,month_key:pendingPayMk,paid_date,amount};
+  const res=await db('payments','POST',obj);
+  if(res){payments.push(Array.isArray(res)?res[0]:obj);closeModal('modal-pay');renderOplaty();renderHome();snack('Opłacono ✓');}
+}
+
+async function confirmPayFixed(){
+  const paid_date=document.getElementById('pay-fixed-date').value;
+  const obj={id:Date.now().toString(),oplata_id:pendingPayFixed.id,month_key:pendingPayFixed.mk,paid_date,amount:pendingPayFixed.amount};
+  const res=await db('payments','POST',obj);
+  if(res){payments.push(Array.isArray(res)?res[0]:obj);closeModal('modal-pay-fixed');renderOplaty();renderHome();snack('Opłacono ✓');}
+}
+
+async function unpay(pid){
+  if(!confirm('Cofnąć płatność?'))return;
+  await db('payments','DELETE',null,`?id=eq.${pid}`);
+  payments=payments.filter(p=>p.id!==pid);renderOplaty();renderHome();snack('Cofnięto');
+}
+
+// ══ EDIT SUB ══
+function openEditSub(id){
+  const s=subs.find(x=>x.id===id);
+  document.getElementById('es-id').value=id;
+  document.getElementById('es-name').value=s.name;
+  document.getElementById('es-start').value=s.start_date||'';
+  document.getElementById('es-duration').value=s.duration||0;
+  document.getElementById('es-amount').value=s.amount||'';
+  document.getElementById('es-enddate').value=s.end_date||'';
+  setToggle('es-auto-toggle',s.auto);
+  const isForever=!s.duration||s.duration==0;
+  document.getElementById('es-enddate-wrap').style.display=isForever?'block':'none';
+  openModal('modal-edit-sub');
+}
+async function updateSub(){
+  const id=document.getElementById('es-id').value;
+  const duration=parseInt(document.getElementById('es-duration').value);
+  const isForever=duration===0;
+  const upd={
+    name:document.getElementById('es-name').value.trim(),
+    start_date:document.getElementById('es-start').value||today(),
+    duration,
+    end_date:isForever?(document.getElementById('es-enddate').value||null):null,
+    amount:parseFloat(document.getElementById('es-amount').value)||null,
+    auto:getToggle('es-auto-toggle')
+  };
+  await db('subs','PATCH',upd,`?id=eq.${id}`);
+  subs=subs.map(s=>s.id!==id?s:{...s,...upd});
+  closeModal('modal-edit-sub');renderLista();snack('Zaktualizowano ✓');
+}
+async function delSub(id){if(!confirm('Usunąć?'))return;await db('subs','DELETE',null,`?id=eq.${id}`);subs=subs.filter(s=>s.id!==id);renderLista();snack('Usunięto');}
+
+// ══ EDIT OPŁATA ══
+function openEditOpl(id){
+  const o=oplaty.find(x=>x.id===id);
+  document.getElementById('eo-id').value=id;
+  document.getElementById('eo-id').dataset.kwotaType=o.variable?'zmienna':'stala';
+  document.getElementById('eo-name').value=o.name;
+  document.getElementById('eo-amount').value=o.amount||'';
+  document.getElementById('eo-freq').value=o.freq;
+  setToggle('eo-auto-toggle',o.auto);
+  setKwotaTypeEdit(o.variable?'zmienna':'stala');
+  openModal('modal-edit-opl');
+}
+async function updateOpl(){
+  const id=document.getElementById('eo-id').value;
+  const isVar=document.getElementById('eo-id').dataset.kwotaType==='zmienna';
+  const upd={name:document.getElementById('eo-name').value.trim(),amount:isVar?null:(parseFloat(document.getElementById('eo-amount').value)||null),variable:isVar,freq:parseInt(document.getElementById('eo-freq').value),auto:getToggle('eo-auto-toggle')};
+  await db('oplaty','PATCH',upd,`?id=eq.${id}`);
+  oplaty=oplaty.map(o=>o.id!==id?o:{...o,...upd});
+  closeModal('modal-edit-opl');renderOplaty();snack('Zaktualizowano ✓');
+}
+async function delOpl(id){if(!confirm('Usunąć?'))return;await db('oplaty','DELETE',null,`?id=eq.${id}`);oplaty=oplaty.filter(o=>o.id!==id);renderOplaty();snack('Usunięto');}
+
+// ══ CUSTOM ══
+let pendingCustomKind='abon';
+function openAddCustom(kind){pendingCustomKind=kind;selectedEmoji='';document.getElementById('ct-kind').value=kind;document.getElementById('ct-name').value='';document.getElementById('ct-emoji-input').value='';renderEmojiGrid();openModal('modal-custom');setTimeout(()=>document.getElementById('ct-name').focus(),300);}
+function renderEmojiGrid(){document.getElementById('emoji-grid').innerHTML=EMOJIS.map(e=>`<button class="epick${selectedEmoji===e?' sel':''}" onclick="pickEmoji('${e}')">${e}</button>`).join('');}
+function pickEmoji(e){selectedEmoji=e;document.getElementById('ct-emoji-input').value='';renderEmojiGrid();}
+async function saveCustomType(){
+  const name=document.getElementById('ct-name').value.trim();
+  if(!name){snack('Wpisz nazwę');return;}
+  const emoji=document.getElementById('ct-emoji-input').value.trim()||selectedEmoji||'📦';
+  const kind=document.getElementById('ct-kind').value;
+  const obj={id:'c_'+Date.now(),name,emoji,kind};
+  const res=await db('custom_types','POST',obj);
+  if(res){customTypes.push(Array.isArray(res)?res[0]:obj);closeModal('modal-custom');renderTiles();snack('Dodano: '+name);}
+}
+function renderSettings(){
+  const list=document.getElementById('custom-list');
+  if(!customTypes.length){list.innerHTML=`<div style="color:var(--muted);font-size:13px">Brak własnych kategorii.</div>`;return;}
+  list.innerHTML=customTypes.map(t=>`<div class="custom-item"><span style="font-size:20px">${t.emoji}</span><div class="custom-item-info"><div class="custom-item-name">${t.name}</div><div class="custom-item-kind">${t.kind==='polisa'?'Polisa':t.kind==='abon'?'Abonament':'Opłata'}</div></div><button class="ibtn" onclick="delCustom('${t.id}')">🗑</button></div>`).join('');
+}
+async function delCustom(id){if(!confirm('Usunąć?'))return;await db('custom_types','DELETE',null,`?id=eq.${id}`);customTypes=customTypes.filter(t=>t.id!==id);renderSettings();snack('Usunięto');}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeIf(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+function snack(msg){const el=document.getElementById('snack');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);}
+
+init();
+</script>
+</body>
+</html>
